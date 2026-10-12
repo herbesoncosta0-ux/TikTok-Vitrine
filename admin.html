@@ -34,7 +34,7 @@
         .preview-box { margin-top: 15px; text-align: center; display: none; background: #1a1d24; padding: 15px; border-radius: 8px; border: 1px solid #2a2d35; }
         .preview-box img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
         #btnSalvar, #btnSalvarEdicao { background: #00f2fe; color: #000; margin-top: 10px; }
-        #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+        #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; }
 
         .section-title { text-align: center; margin-top: 30px; font-size: 22px; color: #fff; letter-spacing: 1px; }
         .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
@@ -51,20 +51,17 @@
         .btn-order { flex: 1; background: #2a2d35; color: #fff; border: 1px solid #3a3d45; border-radius: 6px; padding: 6px; cursor: pointer; transition: 0.2s; font-size: 16px; }
         .btn-order:hover { background: #00f2fe; color: #000; border-color: #00f2fe; }
 
-        /* ========================================= */
-        /* OTIMIZAÇÃO PARA CELULARES (MOBILE FIRST)  */
-        /* ========================================= */
+        /* PAGINAÇÃO */
+        .pagination-controls { display: flex; justify-content: center; gap: 10px; margin: 30px auto; flex-wrap: wrap; max-width: 1200px; padding: 0 20px; }
+        .page-btn { background: #161920; color: #fff; border: 1px solid #2a2d35; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .page-btn:hover { border-color: #00f2fe; color: #00f2fe; }
+        .page-btn.active { background: #00f2fe; color: #000; border-color: #00f2fe; }
+
+        /* OTIMIZAÇÃO PARA CELULARES */
         @media (max-width: 768px) {
-            .grid-vitrine {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px; 
-                padding: 0 10px;
-                margin: 20px auto;
-            }
+            .grid-vitrine { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px; margin: 20px auto; }
             .card-content { padding: 10px; }
-            .card-badge { font-size: 8px; padding: 4px 6px; top: 8px; left: 8px; }
             .card-title { font-size: 11px; margin-bottom: 10px; -webkit-line-clamp: 3; }
-            .card-btn { font-size: 10px; padding: 8px; }
             .admin-controls { gap: 4px; }
             .btn-action { font-size: 9px; padding: 6px 4px; }
             .order-controls { gap: 4px; margin-bottom: 6px; }
@@ -75,6 +72,7 @@
             .brand p { font-size: 10px; }
             .nav-right { gap: 5px; margin-top: 10px; width: 100%; justify-content: flex-end; }
             .btn-novo, .btn-redes { font-size: 10px; padding: 8px 12px; }
+            .page-btn { padding: 8px 12px; font-size: 12px; }
         }
     </style>
 </head>
@@ -96,6 +94,7 @@
 
 <h2 class="section-title">A TUA VITRINE (EDITÁVEL)</h2>
 <div class="grid-vitrine" id="galeriaAdmin"></div>
+<div class="pagination-controls" id="paginationAdmin"></div>
 
 <!-- MODAL: ADICIONAR VÍDEO -->
 <div class="modal-overlay" id="modalAdd">
@@ -104,7 +103,6 @@
         <h2>Adicionar Link</h2>
         <input type="text" id="tiktokLink" placeholder="Cole o link do TikTok aqui...">
         <button class="form-btn" id="btnProcessar">1. Gerar Prévia</button>
-
         <div class="preview-box" id="previewBox">
             <img id="thumbnailImg" src="" alt="Capa">
             <p id="videoTitle" style="font-size: 12px; color: #ccc;"></p>
@@ -159,6 +157,10 @@
     const db = getFirestore(app);
     let dadosParaSalvar = {};
     let listaVideos = [];
+    
+    // Variáveis de Paginação
+    let currentPage = 1;
+    const itemsPerPage = 20;
 
     window.abrirModalAdd = () => document.getElementById('modalAdd').style.display = 'flex';
     window.fecharModalAdd = () => {
@@ -237,48 +239,73 @@
     });
 
     async function carregarVideos() {
-        const galeria = document.getElementById('galeriaAdmin');
-        galeria.innerHTML = '<p style="text-align:center; color:#00f2fe;">A carregar sistema...</p>';
         try {
             const q = query(collection(db, "videos"), orderBy("dataCriacao", "asc"));
             const querySnapshot = await getDocs(q);
-            galeria.innerHTML = '';
             listaVideos = [];
-            
-            if (querySnapshot.empty) {
-                galeria.innerHTML = '<p style="text-align:center; color:#aaa;">Nenhum vídeo publicado ainda.</p>';
-                return;
-            }
-
-            let index = 0;
             querySnapshot.forEach((doc) => {
                 const video = doc.data();
                 video.id = doc.id; 
                 listaVideos.push(video);
-                const safeTitulo = (video.titulo || '').replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-
-                galeria.innerHTML += `
-                    <div class="card-video">
-                        <img class="card-img" src="${video.capa}">
-                        <div class="card-content">
-                            <div class="card-title">${safeTitulo}</div>
-                            <div class="order-controls">
-                                <button class="btn-order" onclick="moverVideo(${index}, 'esquerda')" title="Mover para a esquerda">⬅️</button>
-                                <button class="btn-order" onclick="moverVideo(${index}, 'direita')" title="Mover para a direita">➡️</button>
-                            </div>
-                            <div class="admin-controls">
-                                <button class="btn-action btn-edit" onclick="abrirModalEdit('${video.id}', '${safeTitulo}', '${video.linkOriginal}')">✏️ Editar</button>
-                                <button class="btn-action btn-delete" onclick="deletarVideo('${video.id}')">🗑️ Excluir</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                index++;
             });
+            renderizarGrelha();
         } catch (error) {
-            galeria.innerHTML = '<p style="text-align:center; color:#fe2c55;">Erro ao carregar a grelha.</p>';
+            document.getElementById('galeriaAdmin').innerHTML = '<p style="text-align:center; color:#fe2c55;">Erro ao carregar a grelha.</p>';
         }
     }
+
+    function renderizarGrelha() {
+        const galeria = document.getElementById('galeriaAdmin');
+        const pagination = document.getElementById('paginationAdmin');
+        galeria.innerHTML = '';
+        pagination.innerHTML = '';
+
+        if (listaVideos.length === 0) {
+            galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum vídeo publicado ainda.</p>';
+            return;
+        }
+
+        const totalPages = Math.ceil(listaVideos.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const videosParaExibir = listaVideos.slice(startIndex, endIndex);
+
+        videosParaExibir.forEach((video, index) => {
+            const globalIndex = startIndex + index;
+            const safeTitulo = (video.titulo || '').replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+            galeria.innerHTML += `
+                <div class="card-video">
+                    <img class="card-img" src="${video.capa}">
+                    <div class="card-content">
+                        <div class="card-title">${safeTitulo}</div>
+                        <div class="order-controls">
+                            <button class="btn-order" onclick="moverVideo(${globalIndex}, 'esquerda')" title="Mover para a esquerda">⬅️</button>
+                            <button class="btn-order" onclick="moverVideo(${globalIndex}, 'direita')" title="Mover para a direita">➡️</button>
+                        </div>
+                        <div class="admin-controls">
+                            <button class="btn-action btn-edit" onclick="abrirModalEdit('${video.id}', '${safeTitulo}', '${video.linkOriginal}')">✏️ Editar</button>
+                            <button class="btn-action btn-delete" onclick="deletarVideo('${video.id}')">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        if (totalPages > 1) {
+            for (let i = 1; i <= totalPages; i++) {
+                pagination.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="mudarPagina(${i})">${i}</button>`;
+            }
+        }
+    }
+
+    window.mudarPagina = (page) => {
+        currentPage = page;
+        renderizarGrelha();
+        window.scrollTo({ top: document.getElementById('galeriaAdmin').offsetTop - 20, behavior: 'smooth' });
+    };
 
     window.deletarVideo = async (id) => {
         if(confirm("Tens a certeza que queres excluir este vídeo da vitrine?")) {
