@@ -56,7 +56,7 @@
 
     let dadosParaSalvar = {};
 
-    // Função 1: Buscar dados no TikTok
+    // Função 1: Buscar dados no TikTok (Atualizada)
     document.getElementById('btnProcessar').addEventListener('click', async () => {
         const linkBruto = document.getElementById('tiktokLink').value;
         const btnProcessar = document.getElementById('btnProcessar');
@@ -66,18 +66,23 @@
             return;
         }
 
-        // Limpa o link removendo os parâmetros de rastreamento após o "?"
+        // Limpa o link removendo os parâmetros após o "?"
         const link = linkBruto.split('?')[0];
 
         btnProcessar.innerText = "Buscando capa...";
 
-        const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(link)}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(oembedUrl)}`;
+        // Usar um proxy mais direto (raw)
+        const oembedUrl = `https://www.tiktok.com/oembed?url=${link}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(oembedUrl)}`;
 
         try {
             const response = await fetch(proxyUrl);
-            const data = await response.json();
-            const tiktokData = JSON.parse(data.contents);
+            
+            if (!response.ok) {
+                throw new Error(`Erro na ligação: ${response.status}`);
+            }
+
+            const tiktokData = await response.json();
 
             if (tiktokData.thumbnail_url) {
                 document.getElementById('thumbnailImg').src = tiktokData.thumbnail_url;
@@ -85,17 +90,17 @@
                 document.getElementById('previewBox').style.display = 'block';
 
                 dadosParaSalvar = {
-                    linkOriginal: link, // Guarda o link limpo
+                    linkOriginal: link,
                     capa: tiktokData.thumbnail_url,
                     titulo: tiktokData.title,
                     dataCriacao: new Date().toISOString()
                 };
             } else {
-                alert("Não foi possível carregar a prévia. O vídeo pode ser privado.");
+                alert("O TikTok não devolveu a capa. O vídeo pode ser privado ou ter restrições de idade.");
             }
         } catch (error) {
-            console.error("Erro:", error);
-            alert("Erro ao gerar a prévia do TikTok. Verifica a ligação ou tenta novamente.");
+            console.error("Erro detalhado:", error);
+            alert(`Falha ao ler o link: ${error.message}. Tenta usar o link de um vídeo diferente para testar.`);
         } finally {
             btnProcessar.innerText = "1. Gerar Prévia";
         }
