@@ -27,16 +27,15 @@
         .card-btn { background: #00f2fe; color: #000; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: block; transition: 0.2s; text-transform: uppercase; }
         .card-btn:hover { background: #00e0ef; box-shadow: 0 0 15px rgba(0, 242, 254, 0.5); }
 
-        /* ========================================= */
-        /* OTIMIZAÇÃO PARA CELULARES (MOBILE FIRST)  */
-        /* ========================================= */
+        /* PAGINAÇÃO */
+        .pagination-controls { display: flex; justify-content: center; gap: 10px; margin: 30px auto; flex-wrap: wrap; max-width: 1200px; padding: 0 20px; }
+        .page-btn { background: #161920; color: #fff; border: 1px solid #2a2d35; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .page-btn:hover { border-color: #00f2fe; color: #00f2fe; }
+        .page-btn.active { background: #00f2fe; color: #000; border-color: #00f2fe; }
+
+        /* OTIMIZAÇÃO PARA CELULARES */
         @media (max-width: 768px) {
-            .grid-vitrine {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px; 
-                padding: 0 10px;
-                margin: 20px auto;
-            }
+            .grid-vitrine { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px; margin: 20px auto; }
             .card-content { padding: 10px; }
             .card-badge { font-size: 8px; padding: 4px 6px; top: 8px; left: 8px; }
             .card-title { font-size: 11px; margin-bottom: 10px; -webkit-line-clamp: 3; }
@@ -47,6 +46,7 @@
             .brand p { font-size: 10px; }
             .nav-right { gap: 5px; margin-top: 10px; width: 100%; justify-content: flex-end; }
             .social-link { font-size: 10px; padding: 8px 12px; }
+            .page-btn { padding: 8px 12px; font-size: 12px; }
         }
     </style>
 </head>
@@ -61,13 +61,14 @@
         </div>
     </div>
     <div class="nav-right">
-        <!-- Links das redes sociais que aparecem quando configurados no ADM -->
         <a href="#" target="_blank" class="social-link" id="btnInsta">Instagram</a>
         <a href="#" target="_blank" class="social-link" id="btnFace">Facebook</a>
+        <a href="#" target="_blank" class="social-link" id="btnTiktok">TikTok</a>
     </div>
 </header>
 
 <div class="grid-vitrine" id="galeriaPublica"></div>
+<div class="pagination-controls" id="paginationPublic"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -84,6 +85,11 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    let listaVideos = [];
+    
+    // Variáveis de Paginação
+    let currentPage = 1;
+    const itemsPerPage = 20;
 
     async function carregarRedesSociais() {
         const configSnap = await getDoc(doc(db, "config", "redes_sociais"));
@@ -99,39 +105,74 @@
                 btnFace.href = dados.facebook;
                 btnFace.style.display = 'inline-block';
             }
+            if (dados.tiktok) {
+                const btnTiktok = document.getElementById('btnTiktok');
+                btnTiktok.href = dados.tiktok;
+                btnTiktok.style.display = 'inline-block';
+            }
         }
     }
     carregarRedesSociais();
 
     async function carregarVideos() {
-        const galeria = document.getElementById('galeriaPublica');
-        galeria.innerHTML = '<p style="text-align:center; width:100%; color:#00f2fe;">A carregar produtos...</p>';
         try {
             const q = query(collection(db, "videos"), orderBy("dataCriacao", "asc"));
             const querySnapshot = await getDocs(q);
-            galeria.innerHTML = '';
-            
-            if (querySnapshot.empty) {
-                galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum produto publicado ainda.</p>';
-                return;
-            }
+            listaVideos = [];
             querySnapshot.forEach((doc) => {
                 const video = doc.data();
-                galeria.innerHTML += `
-                    <div class="card-video">
-                        <div class="card-badge">OFERTA TIKTOK</div>
-                        <img class="card-img" src="${video.capa}" alt="Capa">
-                        <div class="card-content">
-                            <div class="card-title">${video.titulo || 'Ver vídeo do produto'}</div>
-                            <a class="card-btn" href="${video.linkOriginal}" target="_blank">🛒 COMPRAR / ASSISTIR</a>
-                        </div>
-                    </div>
-                `;
+                listaVideos.push(video);
             });
+            renderizarGrelha();
         } catch (error) {
-            galeria.innerHTML = '<p style="text-align:center; width:100%; color:#fe2c55;">Erro ao carregar a vitrine.</p>';
+            document.getElementById('galeriaPublica').innerHTML = '<p style="text-align:center; color:#fe2c55;">Erro ao carregar a vitrine.</p>';
         }
     }
+
+    function renderizarGrelha() {
+        const galeria = document.getElementById('galeriaPublica');
+        const pagination = document.getElementById('paginationPublic');
+        galeria.innerHTML = '';
+        pagination.innerHTML = '';
+
+        if (listaVideos.length === 0) {
+            galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum produto publicado ainda.</p>';
+            return;
+        }
+
+        const totalPages = Math.ceil(listaVideos.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const videosParaExibir = listaVideos.slice(startIndex, endIndex);
+
+        videosParaExibir.forEach((video) => {
+            galeria.innerHTML += `
+                <div class="card-video">
+                    <div class="card-badge">OFERTA TIKTOK</div>
+                    <img class="card-img" src="${video.capa}" alt="Capa">
+                    <div class="card-content">
+                        <div class="card-title">${video.titulo || 'Ver vídeo do produto'}</div>
+                        <a class="card-btn" href="${video.linkOriginal}" target="_blank">🛒 COMPRAR / ASSISTIR</a>
+                    </div>
+                </div>
+            `;
+        });
+
+        if (totalPages > 1) {
+            for (let i = 1; i <= totalPages; i++) {
+                pagination.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="mudarPagina(${i})">${i}</button>`;
+            }
+        }
+    }
+
+    window.mudarPagina = (page) => {
+        currentPage = page;
+        renderizarGrelha();
+        window.scrollTo({ top: document.getElementById('galeriaPublica').offsetTop - 20, behavior: 'smooth' });
+    };
+
     carregarVideos();
 </script>
 
