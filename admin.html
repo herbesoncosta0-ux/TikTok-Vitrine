@@ -50,6 +50,32 @@
         .order-controls { display: flex; width: 100%; gap: 8px; margin-bottom: 8px; }
         .btn-order { flex: 1; background: #2a2d35; color: #fff; border: 1px solid #3a3d45; border-radius: 6px; padding: 6px; cursor: pointer; transition: 0.2s; font-size: 16px; }
         .btn-order:hover { background: #00f2fe; color: #000; border-color: #00f2fe; }
+
+        /* ========================================= */
+        /* OTIMIZAÇÃO PARA CELULARES (MOBILE FIRST)  */
+        /* ========================================= */
+        @media (max-width: 768px) {
+            .grid-vitrine {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px; 
+                padding: 0 10px;
+                margin: 20px auto;
+            }
+            .card-content { padding: 10px; }
+            .card-badge { font-size: 8px; padding: 4px 6px; top: 8px; left: 8px; }
+            .card-title { font-size: 11px; margin-bottom: 10px; -webkit-line-clamp: 3; }
+            .card-btn { font-size: 10px; padding: 8px; }
+            .admin-controls { gap: 4px; }
+            .btn-action { font-size: 9px; padding: 6px 4px; }
+            .order-controls { gap: 4px; margin-bottom: 6px; }
+            .btn-order { font-size: 12px; padding: 4px; }
+            .navbar { padding: 15px 10px; flex-wrap: wrap; justify-content: space-between; }
+            .nav-left { gap: 10px; }
+            .brand h1 { font-size: 16px; }
+            .brand p { font-size: 10px; }
+            .nav-right { gap: 5px; margin-top: 10px; width: 100%; justify-content: flex-end; }
+            .btn-novo, .btn-redes { font-size: 10px; padding: 8px 12px; }
+        }
     </style>
 </head>
 <body>
@@ -132,9 +158,6 @@
     let dadosParaSalvar = {};
     let listaVideos = [];
 
-    // ==========================================
-    // CONTROLO DAS JANELAS MODAIS
-    // ==========================================
     window.abrirModalAdd = () => document.getElementById('modalAdd').style.display = 'flex';
     window.fecharModalAdd = () => {
         document.getElementById('modalAdd').style.display = 'none';
@@ -152,7 +175,6 @@
 
     window.abrirModalRedes = async () => {
         document.getElementById('modalRedes').style.display = 'flex';
-        // Puxar os dados existentes
         const configSnap = await getDoc(doc(db, "config", "redes_sociais"));
         if (configSnap.exists()) {
             document.getElementById('linkInsta').value = configSnap.data().instagram || "";
@@ -161,23 +183,14 @@
     };
     window.fecharModalRedes = () => document.getElementById('modalRedes').style.display = 'none';
 
-    // Salvar Redes Sociais
     document.getElementById('btnSalvarRedes').addEventListener('click', async () => {
         const insta = document.getElementById('linkInsta').value;
         const face = document.getElementById('linkFace').value;
-        
-        await setDoc(doc(db, "config", "redes_sociais"), {
-            instagram: insta,
-            facebook: face
-        });
-        
+        await setDoc(doc(db, "config", "redes_sociais"), { instagram: insta, facebook: face });
         alert("Redes Sociais salvas com sucesso!");
         fecharModalRedes();
     });
 
-    // ==========================================
-    // ADICIONAR NOVO VÍDEO
-    // ==========================================
     document.getElementById('btnProcessar').addEventListener('click', async () => {
         const linkBruto = document.getElementById('tiktokLink').value;
         const btnProcessar = document.getElementById('btnProcessar');
@@ -219,14 +232,10 @@
         }
     });
 
-    // ==========================================
-    // CARREGAR GRELHA (AGORA DA ESQUERDA PARA A DIREITA)
-    // ==========================================
     async function carregarVideos() {
         const galeria = document.getElementById('galeriaAdmin');
         galeria.innerHTML = '<p style="text-align:center; color:#00f2fe;">A carregar sistema...</p>';
         try {
-            // Alterado para "asc" para adicionar os vídeos novos à direita/final da fila
             const q = query(collection(db, "videos"), orderBy("dataCriacao", "asc"));
             const querySnapshot = await getDocs(q);
             galeria.innerHTML = '';
@@ -249,12 +258,10 @@
                         <img class="card-img" src="${video.capa}">
                         <div class="card-content">
                             <div class="card-title">${safeTitulo}</div>
-                            
                             <div class="order-controls">
                                 <button class="btn-order" onclick="moverVideo(${index}, 'esquerda')" title="Mover para a esquerda">⬅️</button>
                                 <button class="btn-order" onclick="moverVideo(${index}, 'direita')" title="Mover para a direita">➡️</button>
                             </div>
-                            
                             <div class="admin-controls">
                                 <button class="btn-action btn-edit" onclick="abrirModalEdit('${video.id}', '${safeTitulo}', '${video.linkOriginal}')">✏️ Editar</button>
                                 <button class="btn-action btn-delete" onclick="deletarVideo('${video.id}')">🗑️ Excluir</button>
@@ -269,9 +276,6 @@
         }
     }
 
-    // ==========================================
-    // EXCLUIR VÍDEO
-    // ==========================================
     window.deletarVideo = async (id) => {
         if(confirm("Tens a certeza que queres excluir este vídeo da vitrine?")) {
             await deleteDoc(doc(db, "videos", id));
@@ -279,29 +283,20 @@
         }
     };
 
-    // ==========================================
-    // EDITAR VÍDEO
-    // ==========================================
     document.getElementById('btnSalvarEdicao').addEventListener('click', async () => {
         const id = document.getElementById('editId').value;
         const novoTitulo = document.getElementById('editTitulo').value;
         const novoLink = document.getElementById('editLink').value;
-        
         await updateDoc(doc(db, "videos", id), { titulo: novoTitulo, linkOriginal: novoLink });
         fecharModalEdit();
         carregarVideos();
     });
 
-    // ==========================================
-    // REORDENAR VÍDEOS NA GRELHA
-    // ==========================================
     window.moverVideo = async (indexAtual, direcao) => {
         let indexAlvo = direcao === 'esquerda' ? indexAtual - 1 : indexAtual + 1;
-        
         if (indexAlvo >= 0 && indexAlvo < listaVideos.length) {
             const videoAtual = listaVideos[indexAtual];
             const videoAlvo = listaVideos[indexAlvo];
-
             const tempDate = videoAtual.dataCriacao;
             await updateDoc(doc(db, "videos", videoAtual.id), { dataCriacao: videoAlvo.dataCriacao });
             await updateDoc(doc(db, "videos", videoAlvo.id), { dataCriacao: tempDate });
