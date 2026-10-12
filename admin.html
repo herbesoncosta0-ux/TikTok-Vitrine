@@ -56,7 +56,7 @@
 
     let dadosParaSalvar = {};
 
- // Função 1: Buscar dados no TikTok (Proxy Atualizado)
+// Função 1: Buscar dados no TikTok (Usando API TikWM)
     document.getElementById('btnProcessar').addEventListener('click', async () => {
         const linkBruto = document.getElementById('tiktokLink').value;
         const btnProcessar = document.getElementById('btnProcessar');
@@ -69,38 +69,33 @@
         // Limpa o link removendo os parâmetros após o "?"
         const link = linkBruto.split('?')[0];
 
-        btnProcessar.innerText = "A procurar capa...";
+        btnProcessar.innerText = "A procurar capa (Anti-Bloqueio)...";
 
-        // Utilização de um proxy mais estável (corsproxy.io)
-        const oembedUrl = `https://www.tiktok.com/oembed?url=${link}`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(oembedUrl)}`;
+        // Usamos uma API externa focada no TikTok para evitar o erro 403
+        const apiUrl = `https://www.tikwm.com/api/?url=${link}`;
 
         try {
-            const response = await fetch(proxyUrl);
-            
-            if (!response.ok) {
-                throw new Error(`Erro de comunicação: ${response.status}`);
-            }
+            const response = await fetch(apiUrl);
+            const data = await response.json();
 
-            const tiktokData = await response.json();
-
-            if (tiktokData.thumbnail_url) {
-                document.getElementById('thumbnailImg').src = tiktokData.thumbnail_url;
-                document.getElementById('videoTitle').innerText = tiktokData.title;
+            // O código 0 nesta API significa sucesso
+            if (data.code === 0 && data.data && data.data.cover) {
+                document.getElementById('thumbnailImg').src = data.data.cover;
+                document.getElementById('videoTitle').innerText = data.data.title;
                 document.getElementById('previewBox').style.display = 'block';
 
                 dadosParaSalvar = {
-                    linkOriginal: link, // Guarda o link limpo
-                    capa: tiktokData.thumbnail_url,
-                    titulo: tiktokData.title,
+                    linkOriginal: link,
+                    capa: data.data.cover,
+                    titulo: data.data.title,
                     dataCriacao: new Date().toISOString()
                 };
             } else {
-                alert("O TikTok não devolveu a capa. O vídeo pode ser privado ou ter restrições de idade.");
+                alert("O vídeo não foi encontrado. Pode ser privado ou ter restrições.");
             }
         } catch (error) {
             console.error("Erro detalhado:", error);
-            alert(`Falha ao ler o link: ${error.message}. O bloqueio do TikTok impediu a leitura automática.`);
+            alert(`Falha ao comunicar com a API: ${error.message}`);
         } finally {
             btnProcessar.innerText = "1. Gerar Prévia";
         }
