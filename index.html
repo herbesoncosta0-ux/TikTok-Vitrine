@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitrine do Markola</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0b0d10; color: #fff; margin: 0; padding-bottom: 50px; }
+        
+        /* NAVBAR */
+        .navbar { display: flex; justify-content: space-between; align-items: center; background: #11141a; padding: 15px 30px; border-bottom: 1px solid #1f232b; }
+        .nav-left { display: flex; align-items: center; gap: 15px; }
+        .menu-btn { background: #1a1d24; border: 1px solid #2a2d35; color: #00f2fe; font-size: 20px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .brand h1 { margin: 0; font-size: 22px; color: #00f2fe; text-transform: uppercase; letter-spacing: 1px; font-weight: 900; }
+        .brand p { margin: 0; font-size: 12px; color: #888; text-transform: uppercase; }
+        .nav-right { display: flex; align-items: center; }
+        .profile-btn { display: flex; align-items: center; gap: 10px; background: transparent; border: 1px solid #00f2fe; color: #fff; padding: 5px 15px 5px 5px; border-radius: 30px; text-decoration: none; transition: 0.3s; font-size: 14px; }
+        .profile-btn:hover { background: rgba(0, 242, 254, 0.1); }
+        .avatar { width: 30px; height: 30px; background: #00f2fe; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #000; font-weight: bold; font-size: 12px; }
+
+        /* GRELHA DE VÍDEOS (CORES VIVAS) */
+        .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .card-video { background-color: #161920; border: 2px solid #2a2d35; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: 0.3s; }
+        .card-video:hover { border-color: #fe2c55; box-shadow: 0 0 20px rgba(254, 44, 85, 0.3); transform: translateY(-5px); }
+        .card-badge { position: absolute; top: 12px; left: 12px; background: #fe2c55; color: white; font-size: 11px; font-weight: 900; padding: 5px 10px; border-radius: 6px; z-index: 2; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .card-img { width: 100%; aspect-ratio: 9/16; object-fit: cover; border-bottom: 1px solid #2a2d35; }
+        .card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+        .card-title { font-size: 14px; font-weight: normal; color: #e0e0e0; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
+        .card-btn { background: #00f2fe; color: #000; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: block; transition: 0.2s; text-transform: uppercase; }
+        .card-btn:hover { background: #00e0ef; box-shadow: 0 0 15px rgba(0, 242, 254, 0.5); }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="nav-left">
+        <button class="menu-btn">☰</button>
+        <div class="brand">
+            <h1>TIKTOK VITRINE</h1>
+            <p>Os Melhores Produtos e Links</p>
+        </div>
+    </div>
+    <div class="nav-right">
+        <!-- Direciona para o admin para facilitar o teu acesso -->
+        <a href="admin.html" class="profile-btn">
+            <div class="avatar">VIP</div>
+            <span>Entrar</span>
+        </a>
+    </div>
+</header>
+
+<div class="grid-vitrine" id="galeriaPublica"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBNjDRgCjgdLuwc5B4mipg4Jb6O5EOaU2k",
+        authDomain: "tiktok-vitrine.firebaseapp.com",
+        projectId: "tiktok-vitrine",
+        storageBucket: "tiktok-vitrine.firebasestorage.app",
+        messagingSenderId: "787606106856",
+        appId: "1:787606106856:web:90fd64022f9ba1c3fdcf5d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function carregarVideos() {
+        const galeria = document.getElementById('galeriaPublica');
+        galeria.innerHTML = '<p style="text-align:center; width:100%; color:#00f2fe;">A carregar produtos...</p>';
+        try {
+            const q = query(collection(db, "videos"), orderBy("dataCriacao", "desc"));
+            const querySnapshot = await getDocs(q);
+            galeria.innerHTML = '';
+            if (querySnapshot.empty) {
+                galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum produto publicado ainda.</p>';
+                return;
+            }
+            querySnapshot.forEach((doc) => {
+                const video = doc.data();
+                galeria.innerHTML += `
+                    <div class="card-video">
+                        <div class="card-badge">OFERTA TIKTOK</div>
+                        <img class="card-img" src="${video.capa}" alt="Capa">
+                        <div class="card-content">
+                            <div class="card-title">${video.titulo || 'Ver vídeo do produto'}</div>
+                            <a class="card-btn" href="${video.linkOriginal}" target="_blank">🛒 COMPRAR / ASSISTIR</a>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (error) {
+            galeria.innerHTML = '<p style="text-align:center; width:100%; color:#fe2c55;">Erro ao carregar a vitrine.</p>';
+        }
+    }
+    carregarVideos();
+</script>
+
+</body>
+</html>
