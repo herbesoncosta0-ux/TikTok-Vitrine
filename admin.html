@@ -58,13 +58,16 @@
 
     // Função 1: Buscar dados no TikTok
     document.getElementById('btnProcessar').addEventListener('click', async () => {
-        const link = document.getElementById('tiktokLink').value;
+        const linkBruto = document.getElementById('tiktokLink').value;
         const btnProcessar = document.getElementById('btnProcessar');
         
-        if (!link) {
+        if (!linkBruto) {
             alert("Por favor, cole um link do TikTok.");
             return;
         }
+
+        // Limpa o link removendo os parâmetros de rastreamento após o "?"
+        const link = linkBruto.split('?')[0];
 
         btnProcessar.innerText = "Buscando capa...";
 
@@ -82,7 +85,7 @@
                 document.getElementById('previewBox').style.display = 'block';
 
                 dadosParaSalvar = {
-                    linkOriginal: link,
+                    linkOriginal: link, // Guarda o link limpo
                     capa: tiktokData.thumbnail_url,
                     titulo: tiktokData.title,
                     dataCriacao: new Date().toISOString()
@@ -92,7 +95,7 @@
             }
         } catch (error) {
             console.error("Erro:", error);
-            alert("Erro ao gerar a prévia do TikTok.");
+            alert("Erro ao gerar a prévia do TikTok. Verifica a ligação ou tenta novamente.");
         } finally {
             btnProcessar.innerText = "1. Gerar Prévia";
         }
