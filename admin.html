@@ -34,7 +34,7 @@
         .preview-box { margin-top: 15px; text-align: center; display: none; background: #1a1d24; padding: 15px; border-radius: 8px; border: 1px solid #2a2d35; }
         .preview-box img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
         #btnSalvar, #btnSalvarEdicao { background: #00f2fe; color: #000; margin-top: 10px; }
-        #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; }
+        #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
 
         .section-title { text-align: center; margin-top: 30px; font-size: 22px; color: #fff; letter-spacing: 1px; }
         .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
@@ -122,6 +122,8 @@
         <input type="text" id="linkInsta" placeholder="https://instagram.com/seu_perfil">
         <label style="font-size: 12px; color: #888;">Link do Facebook:</label>
         <input type="text" id="linkFace" placeholder="https://facebook.com/seu_perfil">
+        <label style="font-size: 12px; color: #888;">Link do TikTok:</label>
+        <input type="text" id="linkTiktok" placeholder="https://tiktok.com/@seu_perfil">
         <button class="form-btn" id="btnSalvarRedes" style="background: #00f2fe; color: #000; margin-top: 15px;">Salvar Redes Sociais</button>
     </div>
 </div>
@@ -179,6 +181,7 @@
         if (configSnap.exists()) {
             document.getElementById('linkInsta').value = configSnap.data().instagram || "";
             document.getElementById('linkFace').value = configSnap.data().facebook || "";
+            document.getElementById('linkTiktok').value = configSnap.data().tiktok || "";
         }
     };
     window.fecharModalRedes = () => document.getElementById('modalRedes').style.display = 'none';
@@ -186,7 +189,8 @@
     document.getElementById('btnSalvarRedes').addEventListener('click', async () => {
         const insta = document.getElementById('linkInsta').value;
         const face = document.getElementById('linkFace').value;
-        await setDoc(doc(db, "config", "redes_sociais"), { instagram: insta, facebook: face });
+        const tiktok = document.getElementById('linkTiktok').value;
+        await setDoc(doc(db, "config", "redes_sociais"), { instagram: insta, facebook: face, tiktok: tiktok });
         alert("Redes Sociais salvas com sucesso!");
         fecharModalRedes();
     });
