@@ -5,17 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel ADM - TikTok Vitrine</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #121212; color: #fff; padding: 20px; margin: 0; }
-        .container { max-width: 600px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        /* Estilos do formulário (Mantidos intactos) */
+        body { font-family: Arial, sans-serif; background-color: #0f1115; color: #fff; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; background: #1a1d24; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid #2a2d35; }
         input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
-        input { background: #333; color: #fff; font-size: 16px; }
+        input { background: #2a2d35; color: #fff; font-size: 16px; }
         button { background: #fe2c55; color: white; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
         button:hover { background: #e0264b; }
-        .preview-box { margin-top: 20px; text-align: center; display: none; background: #2a2a2a; padding: 15px; border-radius: 8px; }
+        .preview-box { margin-top: 20px; text-align: center; display: none; background: #22252c; padding: 15px; border-radius: 8px; }
         .preview-box img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
         #btnSalvar { background: #00f2fe; color: #000; margin-top: 15px; }
         #btnSalvar:hover { background: #00c6d7; }
         #btnSalvar:disabled { background: #666; cursor: not-allowed; }
+
+        /* NOVOS ESTILOS DA GRELHA (Baseado na imagem enviada) */
+        .section-title { text-align: center; margin-top: 50px; font-size: 22px; color: #fff; border-top: 1px solid #2a2d35; padding-top: 30px; text-transform: uppercase; letter-spacing: 1px; }
+        .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; max-width: 1200px; margin: 30px auto; }
+        .card-video { background-color: #1a1d24; border: 1px solid #2a2d35; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: all 0.3s ease; }
+        .card-video:hover { border-color: #00f2fe; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2); transform: translateY(-3px); }
+        .card-badge { position: absolute; top: 10px; left: 10px; background: rgba(254, 44, 85, 0.9); color: white; font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 4px; z-index: 2; text-transform: uppercase; border: 1px solid #ff4d6d; }
+        .card-img { width: 100%; aspect-ratio: 9/16; object-fit: cover; }
+        .card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+        .card-title { font-size: 13px; font-weight: normal; color: #ccc; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
+        .card-btn { background: #1e88e5; color: white; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 13px; display: block; transition: 0.2s; }
+        .card-btn:hover { background: #1565c0; }
     </style>
 </head>
 <body>
@@ -35,12 +48,13 @@
     </div>
 </div>
 
-<script type="module">
-    // Importando o Firebase diretamente
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+<h2 class="section-title">Vídeos Publicados</h2>
+<div class="grid-vitrine" id="galeriaAdmin"></div>
 
-    // Suas chaves de conexão
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyBNjDRgCjgdLuwc5B4mipg4Jb6O5EOaU2k",
         authDomain: "tiktok-vitrine.firebaseapp.com",
@@ -50,46 +64,28 @@
         appId: "1:787606106856:web:90fd64022f9ba1c3fdcf5d"
     };
 
-    // Inicializando o Firebase e o Banco de Dados
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     let dadosParaSalvar = {};
 
-// Função 1: Buscar dados no TikTok (Usando API TikWM)
+    // Código da Função 1 Intacto (Com API TikWM)
     document.getElementById('btnProcessar').addEventListener('click', async () => {
         const linkBruto = document.getElementById('tiktokLink').value;
         const btnProcessar = document.getElementById('btnProcessar');
-        
-        if (!linkBruto) {
-            alert("Por favor, cole um link do TikTok.");
-            return;
-        }
-
-        // Limpa o link removendo os parâmetros após o "?"
+        if (!linkBruto) { alert("Por favor, cole um link do TikTok."); return; }
         const link = linkBruto.split('?')[0];
-
         btnProcessar.innerText = "A procurar capa (Anti-Bloqueio)...";
-
-        // Usamos uma API externa focada no TikTok para evitar o erro 403
         const apiUrl = `https://www.tikwm.com/api/?url=${link}`;
 
         try {
             const response = await fetch(apiUrl);
             const data = await response.json();
-
-            // O código 0 nesta API significa sucesso
             if (data.code === 0 && data.data && data.data.cover) {
                 document.getElementById('thumbnailImg').src = data.data.cover;
                 document.getElementById('videoTitle').innerText = data.data.title;
                 document.getElementById('previewBox').style.display = 'block';
-
-                dadosParaSalvar = {
-                    linkOriginal: link,
-                    capa: data.data.cover,
-                    titulo: data.data.title,
-                    dataCriacao: new Date().toISOString()
-                };
+                dadosParaSalvar = { linkOriginal: link, capa: data.data.cover, titulo: data.data.title, dataCriacao: new Date().toISOString() };
             } else {
                 alert("O vídeo não foi encontrado. Pode ser privado ou ter restrições.");
             }
@@ -100,21 +96,20 @@
             btnProcessar.innerText = "1. Gerar Prévia";
         }
     });
-    // Função 2: Salvar no Banco de Dados
+
+    // Código da Função 2 (Salvar e atualizar galeria)
     document.getElementById('btnSalvar').addEventListener('click', async () => {
         const btnSalvar = document.getElementById('btnSalvar');
         btnSalvar.innerText = "Salvando no sistema...";
         btnSalvar.disabled = true;
 
         try {
-            // Salva na coleção "videos" no Firestore
             await addDoc(collection(db, "videos"), dadosParaSalvar);
             alert("Sucesso! Vídeo publicado na sua vitrine.");
-            
-            // Limpa o painel para o próximo link
             document.getElementById('tiktokLink').value = "";
             document.getElementById('previewBox').style.display = "none";
             dadosParaSalvar = {};
+            carregarVideos(); // Atualiza a grelha automaticamente após salvar
         } catch (e) {
             console.error("Erro ao salvar:", e);
             alert("Erro ao salvar. Verifique se o modo de teste do banco de dados está ativo.");
@@ -123,7 +118,42 @@
             btnSalvar.disabled = false;
         }
     });
-</script>
 
+    // Nova Função: Puxar vídeos para a grelha
+    async function carregarVideos() {
+        const galeria = document.getElementById('galeriaAdmin');
+        galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">A carregar vídeos...</p>';
+        try {
+            const q = query(collection(db, "videos"), orderBy("dataCriacao", "desc"));
+            const querySnapshot = await getDocs(q);
+            galeria.innerHTML = '';
+            
+            if (querySnapshot.empty) {
+                galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum vídeo publicado ainda.</p>';
+                return;
+            }
+
+            querySnapshot.forEach((doc) => {
+                const video = doc.data();
+                galeria.innerHTML += `
+                    <div class="card-video">
+                        <div class="card-badge">TIKTOK OBTIDO</div>
+                        <img class="card-img" src="${video.capa}" alt="Capa">
+                        <div class="card-content">
+                            <div class="card-title">${video.titulo || 'Ver vídeo no TikTok'}</div>
+                            <a class="card-btn" href="${video.linkOriginal}" target="_blank">📺 ASSISTIR</a>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (error) {
+            console.error("Erro ao buscar vídeos:", error);
+            galeria.innerHTML = '<p style="text-align:center; width:100%; color:#ff4d6d;">Erro ao carregar a grelha.</p>';
+        }
+    }
+
+    // Carrega os vídeos ao abrir a página
+    carregarVideos();
+</script>
 </body>
 </html>
