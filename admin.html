@@ -56,7 +56,7 @@
 
     let dadosParaSalvar = {};
 
-  // Função 1: Buscar dados no TikTok
+ // Função 1: Buscar dados no TikTok (Proxy Atualizado)
     document.getElementById('btnProcessar').addEventListener('click', async () => {
         const linkBruto = document.getElementById('tiktokLink').value;
         const btnProcessar = document.getElementById('btnProcessar');
@@ -69,17 +69,17 @@
         // Limpa o link removendo os parâmetros após o "?"
         const link = linkBruto.split('?')[0];
 
-        btnProcessar.innerText = "Buscando capa...";
+        btnProcessar.innerText = "A procurar capa...";
 
-        // Usar um proxy mais direto (raw)
+        // Utilização de um proxy mais estável (corsproxy.io)
         const oembedUrl = `https://www.tiktok.com/oembed?url=${link}`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(oembedUrl)}`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(oembedUrl)}`;
 
         try {
             const response = await fetch(proxyUrl);
             
             if (!response.ok) {
-                throw new Error(`Erro na ligação: ${response.status}`);
+                throw new Error(`Erro de comunicação: ${response.status}`);
             }
 
             const tiktokData = await response.json();
@@ -90,7 +90,7 @@
                 document.getElementById('previewBox').style.display = 'block';
 
                 dadosParaSalvar = {
-                    linkOriginal: link,
+                    linkOriginal: link, // Guarda o link limpo
                     capa: tiktokData.thumbnail_url,
                     titulo: tiktokData.title,
                     dataCriacao: new Date().toISOString()
@@ -100,12 +100,11 @@
             }
         } catch (error) {
             console.error("Erro detalhado:", error);
-            alert(`Falha ao ler o link: ${error.message}. Tenta usar o link de um vídeo diferente para testar.`);
+            alert(`Falha ao ler o link: ${error.message}. O bloqueio do TikTok impediu a leitura automática.`);
         } finally {
             btnProcessar.innerText = "1. Gerar Prévia";
         }
     });
-
     // Função 2: Salvar no Banco de Dados
     document.getElementById('btnSalvar').addEventListener('click', async () => {
         const btnSalvar = document.getElementById('btnSalvar');
