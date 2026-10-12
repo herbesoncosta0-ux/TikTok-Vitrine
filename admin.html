@@ -7,18 +7,18 @@
     <style>
         body { font-family: Arial, sans-serif; background-color: #0b0d10; color: #fff; margin: 0; padding-bottom: 50px; }
         
-        /* NAVBAR ESTILO PROMPT SHOP */
         .navbar { display: flex; justify-content: space-between; align-items: center; background: #11141a; padding: 15px 30px; border-bottom: 1px solid #1f232b; }
         .nav-left { display: flex; align-items: center; gap: 15px; }
         .menu-btn { background: #1a1d24; border: 1px solid #2a2d35; color: #00f2fe; font-size: 20px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
         .brand h1 { margin: 0; font-size: 22px; color: #00f2fe; text-transform: uppercase; letter-spacing: 1px; font-weight: 900; }
         .brand p { margin: 0; font-size: 12px; color: #888; text-transform: uppercase; }
         
-        /* BOTÃO DE ADICIONAR NOVO (NO TOPO) */
-        .btn-novo { background: #fe2c55; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .btn-novo { background: #fe2c55; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase; }
         .btn-novo:hover { background: #ff4d6d; box-shadow: 0 0 15px rgba(254, 44, 85, 0.5); }
+        .btn-redes { background: #1e88e5; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase; }
+        .btn-redes:hover { background: #1565c0; box-shadow: 0 0 15px rgba(30, 136, 229, 0.5); }
 
-        /* MODAL (JANELA FLUTUANTE) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
         .modal-box { background: #161920; padding: 25px; border-radius: 12px; border: 1px solid #2a2d35; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
         .modal-box h2 { margin-top: 0; color: #00f2fe; font-size: 20px; text-align: center; }
@@ -34,9 +34,8 @@
         .preview-box { margin-top: 15px; text-align: center; display: none; background: #1a1d24; padding: 15px; border-radius: 8px; border: 1px solid #2a2d35; }
         .preview-box img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
         #btnSalvar, #btnSalvarEdicao { background: #00f2fe; color: #000; margin-top: 10px; }
-        #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+        #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; }
 
-        /* GRELHA DE VÍDEOS COM CONTROLOS ADM */
         .section-title { text-align: center; margin-top: 30px; font-size: 22px; color: #fff; letter-spacing: 1px; }
         .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .card-video { background-color: #161920; border: 2px solid #2a2d35; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: 0.3s; }
@@ -44,7 +43,6 @@
         .card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
         .card-title { font-size: 14px; color: #e0e0e0; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; }
         
-        /* BOTÕES DE ADMINISTRAÇÃO NOS CARTÕES */
         .admin-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
         .btn-action { flex: 1; padding: 8px; border-radius: 6px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.2s; color: #fff; text-transform: uppercase; }
         .btn-edit { background: #f39c12; } .btn-edit:hover { background: #e67e22; }
@@ -65,6 +63,7 @@
         </div>
     </div>
     <div class="nav-right">
+        <button class="btn-redes" onclick="abrirModalRedes()">Redes Sociais</button>
         <button class="btn-novo" onclick="abrirModalAdd()">+ Novo Vídeo</button>
     </div>
 </header>
@@ -88,6 +87,19 @@
     </div>
 </div>
 
+<!-- MODAL: REDES SOCIAIS -->
+<div class="modal-overlay" id="modalRedes">
+    <div class="modal-box">
+        <button class="close-modal" onclick="fecharModalRedes()">✖</button>
+        <h2>Configurar Redes Sociais</h2>
+        <label style="font-size: 12px; color: #888;">Link do Instagram:</label>
+        <input type="text" id="linkInsta" placeholder="https://instagram.com/seu_perfil">
+        <label style="font-size: 12px; color: #888;">Link do Facebook:</label>
+        <input type="text" id="linkFace" placeholder="https://facebook.com/seu_perfil">
+        <button class="form-btn" id="btnSalvarRedes" style="background: #00f2fe; color: #000; margin-top: 15px;">Salvar Redes Sociais</button>
+    </div>
+</div>
+
 <!-- MODAL: EDITAR TÍTULO/LINK -->
 <div class="modal-overlay" id="modalEdit">
     <div class="modal-box">
@@ -104,7 +116,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBNjDRgCjgdLuwc5B4mipg4Jb6O5EOaU2k",
@@ -118,7 +130,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     let dadosParaSalvar = {};
-    let listaVideos = []; // Guarda os vídeos para podermos reordenar
+    let listaVideos = [];
 
     // ==========================================
     // CONTROLO DAS JANELAS MODAIS
@@ -138,8 +150,33 @@
     };
     window.fecharModalEdit = () => document.getElementById('modalEdit').style.display = 'none';
 
+    window.abrirModalRedes = async () => {
+        document.getElementById('modalRedes').style.display = 'flex';
+        // Puxar os dados existentes
+        const configSnap = await getDoc(doc(db, "config", "redes_sociais"));
+        if (configSnap.exists()) {
+            document.getElementById('linkInsta').value = configSnap.data().instagram || "";
+            document.getElementById('linkFace').value = configSnap.data().facebook || "";
+        }
+    };
+    window.fecharModalRedes = () => document.getElementById('modalRedes').style.display = 'none';
+
+    // Salvar Redes Sociais
+    document.getElementById('btnSalvarRedes').addEventListener('click', async () => {
+        const insta = document.getElementById('linkInsta').value;
+        const face = document.getElementById('linkFace').value;
+        
+        await setDoc(doc(db, "config", "redes_sociais"), {
+            instagram: insta,
+            facebook: face
+        });
+        
+        alert("Redes Sociais salvas com sucesso!");
+        fecharModalRedes();
+    });
+
     // ==========================================
-    // ADICIONAR NOVO VÍDEO (TikWM)
+    // ADICIONAR NOVO VÍDEO
     // ==========================================
     document.getElementById('btnProcessar').addEventListener('click', async () => {
         const linkBruto = document.getElementById('tiktokLink').value;
@@ -160,7 +197,7 @@
                     linkOriginal: link, 
                     capa: data.data.cover, 
                     titulo: data.data.title, 
-                    dataCriacao: new Date().getTime() // Usando Timestamp numérico para facilitar ordenação
+                    dataCriacao: new Date().getTime() 
                 };
             } else {
                 alert("Erro: O vídeo pode ser privado.");
@@ -183,13 +220,14 @@
     });
 
     // ==========================================
-    // CARREGAR GRELHA E FUNÇÕES DE ADMINISTRAÇÃO
+    // CARREGAR GRELHA (AGORA DA ESQUERDA PARA A DIREITA)
     // ==========================================
     async function carregarVideos() {
         const galeria = document.getElementById('galeriaAdmin');
         galeria.innerHTML = '<p style="text-align:center; color:#00f2fe;">A carregar sistema...</p>';
         try {
-            const q = query(collection(db, "videos"), orderBy("dataCriacao", "desc"));
+            // Alterado para "asc" para adicionar os vídeos novos à direita/final da fila
+            const q = query(collection(db, "videos"), orderBy("dataCriacao", "asc"));
             const querySnapshot = await getDocs(q);
             galeria.innerHTML = '';
             listaVideos = [];
@@ -202,10 +240,8 @@
             let index = 0;
             querySnapshot.forEach((doc) => {
                 const video = doc.data();
-                video.id = doc.id; // Guarda a ID do Firebase
+                video.id = doc.id; 
                 listaVideos.push(video);
-                
-                // Transforma aspas duplas em simples para evitar erros no HTML
                 const safeTitulo = (video.titulo || '').replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
                 galeria.innerHTML += `
@@ -215,8 +251,8 @@
                             <div class="card-title">${safeTitulo}</div>
                             
                             <div class="order-controls">
-                                <button class="btn-order" onclick="moverVideo(${index}, 'cima')" title="Mover para cima (Mais recente)">⬆️</button>
-                                <button class="btn-order" onclick="moverVideo(${index}, 'baixo')" title="Mover para baixo (Mais antigo)">⬇️</button>
+                                <button class="btn-order" onclick="moverVideo(${index}, 'esquerda')" title="Mover para a esquerda">⬅️</button>
+                                <button class="btn-order" onclick="moverVideo(${index}, 'direita')" title="Mover para a direita">➡️</button>
                             </div>
                             
                             <div class="admin-controls">
@@ -244,45 +280,35 @@
     };
 
     // ==========================================
-    // EDITAR VÍDEO (SALVAR)
+    // EDITAR VÍDEO
     // ==========================================
     document.getElementById('btnSalvarEdicao').addEventListener('click', async () => {
         const id = document.getElementById('editId').value;
         const novoTitulo = document.getElementById('editTitulo').value;
         const novoLink = document.getElementById('editLink').value;
         
-        await updateDoc(doc(db, "videos", id), {
-            titulo: novoTitulo,
-            linkOriginal: novoLink
-        });
-        
+        await updateDoc(doc(db, "videos", id), { titulo: novoTitulo, linkOriginal: novoLink });
         fecharModalEdit();
         carregarVideos();
     });
 
     // ==========================================
-    // REORDENAR VÍDEOS (TROCAR DATAS)
+    // REORDENAR VÍDEOS NA GRELHA
     // ==========================================
     window.moverVideo = async (indexAtual, direcao) => {
-        let indexAlvo = direcao === 'cima' ? indexAtual - 1 : indexAtual + 1;
+        let indexAlvo = direcao === 'esquerda' ? indexAtual - 1 : indexAtual + 1;
         
-        // Verifica se a movimentação é possível (se não é o primeiro a subir ou o último a descer)
         if (indexAlvo >= 0 && indexAlvo < listaVideos.length) {
             const videoAtual = listaVideos[indexAtual];
             const videoAlvo = listaVideos[indexAlvo];
 
-            // Troca a data de criação entre os dois documentos no Firebase para inverter a ordem
             const tempDate = videoAtual.dataCriacao;
-            
             await updateDoc(doc(db, "videos", videoAtual.id), { dataCriacao: videoAlvo.dataCriacao });
             await updateDoc(doc(db, "videos", videoAlvo.id), { dataCriacao: tempDate });
-
-            // Recarrega a grelha para mostrar a nova posição
             carregarVideos();
         }
     };
 
-    // Inicializa a galeria ao abrir a página
     carregarVideos();
 </script>
 </body>
