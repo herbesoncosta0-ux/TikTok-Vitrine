@@ -38,6 +38,8 @@
         #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; }
 
         .section-title { text-align: center; margin-top: 30px; font-size: 22px; color: #fff; letter-spacing: 1px; }
+        .session-indicator { max-width: 1200px; margin: 20px auto 0 auto; padding: 0 20px; color: #b026ff; font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; display: none; }
+
         .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .card-video { background-color: #161920; border: 2px solid #2a2d35; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: 0.3s; }
         .card-img { width: 100%; aspect-ratio: 9/16; object-fit: cover; border-bottom: 1px solid #2a2d35; }
@@ -66,7 +68,7 @@
 
         /* OTIMIZAÇÃO PARA CELULARES */
         @media (max-width: 768px) {
-            .grid-vitrine { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px; margin: 20px auto; }
+            .grid-vitrine { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px; margin: 15px auto; }
             .card-content { padding: 10px; }
             .card-title { font-size: 11px; margin-bottom: 10px; -webkit-line-clamp: 3; }
             .admin-controls { gap: 4px; }
@@ -81,6 +83,7 @@
             .btn-novo, .btn-redes { font-size: 10px; padding: 8px 12px; }
             .page-btn { padding: 8px 12px; font-size: 12px; }
             .floating-contact { bottom: 15px; right: 15px; padding: 10px 15px; font-size: 12px; }
+            .session-indicator { font-size: 12px; padding: 0 10px; margin-top: 15px; }
         }
     </style>
 </head>
@@ -101,6 +104,7 @@
 </header>
 
 <h2 class="section-title">A TUA VITRINE (EDITÁVEL)</h2>
+<div class="session-indicator" id="sessionIndicator">SESSÃO 1</div>
 <div class="grid-vitrine" id="galeriaAdmin"></div>
 <div class="pagination-controls" id="paginationAdmin"></div>
 
@@ -349,6 +353,7 @@
     function renderizarGrelha() {
         const galeria = document.getElementById('galeriaAdmin');
         const pagination = document.getElementById('paginationAdmin');
+        const sessionIndicator = document.getElementById('sessionIndicator');
         
         let htmlGaleria = '';
         let htmlPagination = '';
@@ -356,11 +361,15 @@
         if (listaVideos.length === 0) {
             galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum vídeo publicado ainda.</p>';
             pagination.innerHTML = '';
+            sessionIndicator.style.display = 'none';
             return;
         }
 
         const totalPages = Math.ceil(listaVideos.length / itemsPerPage);
         if (currentPage > totalPages) currentPage = totalPages;
+
+        sessionIndicator.innerText = `SESSÃO ${currentPage}`;
+        sessionIndicator.style.display = 'block';
 
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
@@ -409,7 +418,7 @@
     window.mudarPagina = (page) => {
         currentPage = page;
         renderizarGrelha();
-        window.scrollTo({ top: document.getElementById('galeriaAdmin').offsetTop - 20, behavior: 'smooth' });
+        window.scrollTo({ top: document.getElementById('sessionIndicator').offsetTop - 20, behavior: 'smooth' });
     };
 
     window.deletarVideo = async (id) => {
