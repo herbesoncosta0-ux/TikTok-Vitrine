@@ -179,7 +179,6 @@
         if (imgElement.dataset.corrigido) return;
         imgElement.dataset.corrigido = "true";
         
-        // Exibe um placeholder bonito enquanto processa
         imgElement.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='426' viewBox='0 0 240 426'%3E%3Crect width='240' height='426' fill='%23161920'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23b026ff' font-weight='bold' text-anchor='middle' dy='.3em'%3EAtualizando...%3C/text%3E%3C/svg%3E";
         
         filaCapa.push({ img: imgElement, id: videoId, link: linkOriginal });
@@ -207,11 +206,11 @@
             item.img.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='426' viewBox='0 0 240 426'%3E%3Crect width='240' height='426' fill='%23161920'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23b026ff' font-weight='bold' text-anchor='middle' dy='.3em'%3EErro de Capa%3C/text%3E%3C/svg%3E";
         }
         
-        // Aguarda 1.5 segundos antes de corrigir a próxima
+        // Aguarda 1 segundo antes de corrigir a próxima
         setTimeout(() => {
             processandoFila = false;
             processarFila();
-        }, 1500);
+        }, 1000);
     }
     // ------------------------------------------------------------------
 
@@ -323,11 +322,13 @@
     function renderizarGrelha() {
         const galeria = document.getElementById('galeriaAdmin');
         const pagination = document.getElementById('paginationAdmin');
-        galeria.innerHTML = '';
-        pagination.innerHTML = '';
+        
+        let htmlGaleria = '';
+        let htmlPagination = '';
 
         if (listaVideos.length === 0) {
             galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum vídeo publicado ainda.</p>';
+            pagination.innerHTML = '';
             return;
         }
 
@@ -349,7 +350,7 @@
             const badgeBg = isAgendado ? "#f39c12" : "#b026ff";
             const badgeTxt = isAgendado ? "AGENDADO" : "PUBLICADO";
 
-            galeria.innerHTML += `
+            htmlGaleria += `
                 <div class="card-video" style="${isAgendado ? 'border-color: #f39c12;' : ''}">
                     <div class="card-badge" style="background: ${badgeBg};">${badgeTxt}</div>
                     <img class="card-img" src="${video.capa}" alt="Capa" onerror="window.corrigirCapa(this, '${video.id}', '${video.linkOriginal}')">
@@ -368,11 +369,15 @@
             `;
         });
 
+        // Injeta todo o HTML de uma vez só (corrige o bug do Loop Eterno)
+        galeria.innerHTML = htmlGaleria;
+
         if (totalPages > 1) {
             for (let i = 1; i <= totalPages; i++) {
-                pagination.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="mudarPagina(${i})">${i}</button>`;
+                htmlPagination += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="mudarPagina(${i})">${i}</button>`;
             }
         }
+        pagination.innerHTML = htmlPagination;
     }
 
     window.mudarPagina = (page) => {
