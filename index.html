@@ -86,26 +86,48 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     let listaVideos = [];
-    
     let currentPage = 1;
     const itemsPerPage = 20;
 
-    // Função global para corrigir capa quebrada no frontend
-    window.corrigirCapa = async (imgElement, linkOriginal) => {
-        if (imgElement.dataset.corrigido) return; // Evita loop
+    // ----- SISTEMA DE FILA PARA CORREÇÃO DE CAPAS -----
+    const filaCapa = [];
+    let processandoFila = false;
+
+    window.corrigirCapa = (imgElement, linkOriginal) => {
+        if (imgElement.dataset.corrigido) return; 
         imgElement.dataset.corrigido = "true";
+        
+        // Exibe um placeholder bonito enquanto processa na fila
+        imgElement.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='426' viewBox='0 0 240 426'%3E%3Crect width='240' height='426' fill='%23161920'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23b026ff' font-weight='bold' text-anchor='middle' dy='.3em'%3EAtualizando...%3C/text%3E%3C/svg%3E";
+        
+        filaCapa.push({ img: imgElement, link: linkOriginal });
+        processarFila();
+    };
+
+    async function processarFila() {
+        if (processandoFila || filaCapa.length === 0) return;
+        processandoFila = true;
+        
+        const item = filaCapa.shift();
         try {
-            const response = await fetch(`https://www.tikwm.com/api/?url=${linkOriginal}`);
+            const response = await fetch(`https://www.tikwm.com/api/?url=${item.link}`);
             const data = await response.json();
             if (data.code === 0 && data.data && data.data.cover) {
-                imgElement.src = data.data.cover;
+                item.img.src = data.data.cover;
             } else {
-                imgElement.src = "https://via.placeholder.com/300x533/161920/b026ff?text=Sem+Capa";
+                item.img.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='426' viewBox='0 0 240 426'%3E%3Crect width='240' height='426' fill='%23161920'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23b026ff' font-weight='bold' text-anchor='middle' dy='.3em'%3ESem Capa%3C/text%3E%3C/svg%3E";
             }
         } catch (e) {
-            imgElement.src = "https://via.placeholder.com/300x533/161920/b026ff?text=Sem+Capa";
+            item.img.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='426' viewBox='0 0 240 426'%3E%3Crect width='240' height='426' fill='%23161920'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23b026ff' font-weight='bold' text-anchor='middle' dy='.3em'%3EErro de Capa%3C/text%3E%3C/svg%3E";
         }
-    };
+        
+        // Aguarda 1.5 segundos antes de corrigir a próxima para não sobrecarregar a API
+        setTimeout(() => {
+            processandoFila = false;
+            processarFila();
+        }, 1500);
+    }
+    // --------------------------------------------------
 
     async function carregarRedesSociais() {
         const configSnap = await getDoc(doc(db, "config", "redes_sociais"));
@@ -164,7 +186,6 @@
         const videosParaExibir = listaVideos.slice(startIndex, endIndex);
 
         videosParaExibir.forEach((video) => {
-            // Adicionado o onerror para recarregar a imagem caso o link do TikTok expire
             galeria.innerHTML += `
                 <div class="card-video">
                     <div class="card-badge">OFERTA TIKTOK</div>
@@ -192,6 +213,5 @@
 
     carregarVideos();
 </script>
-
 </body>
 </html>
