@@ -54,6 +54,10 @@
         .btn-order { flex: 1; background: #2a2d35; color: #fff; border: 1px solid #3a3d45; border-radius: 6px; padding: 6px; cursor: pointer; transition: 0.2s; font-size: 16px; }
         .btn-order:hover { background: #00f2fe; color: #000; border-color: #00f2fe; }
 
+        /* BOTÃO FLUTUANTE DE CONTATO */
+        .floating-contact { position: fixed; bottom: 20px; right: 20px; background: #00f2fe; color: #000; padding: 12px 20px; border-radius: 50px; font-weight: bold; font-size: 14px; text-decoration: none; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4); transition: 0.3s; z-index: 1000; display: none; align-items: center; gap: 8px; text-transform: uppercase; }
+        .floating-contact:hover { background: #b026ff; color: #fff; box-shadow: 0 4px 15px rgba(176, 38, 255, 0.4); transform: translateY(-3px); }
+
         /* PAGINAÇÃO */
         .pagination-controls { display: flex; justify-content: center; gap: 10px; margin: 30px auto; flex-wrap: wrap; max-width: 1200px; padding: 0 20px; }
         .page-btn { background: #161920; color: #fff; border: 1px solid #2a2d35; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
@@ -76,6 +80,7 @@
             .nav-right { gap: 5px; margin-top: 10px; width: 100%; justify-content: flex-end; }
             .btn-novo, .btn-redes { font-size: 10px; padding: 8px 12px; }
             .page-btn { padding: 8px 12px; font-size: 12px; }
+            .floating-contact { bottom: 15px; right: 15px; padding: 10px 15px; font-size: 12px; }
         }
     </style>
 </head>
@@ -98,6 +103,9 @@
 <h2 class="section-title">A TUA VITRINE (EDITÁVEL)</h2>
 <div class="grid-vitrine" id="galeriaAdmin"></div>
 <div class="pagination-controls" id="paginationAdmin"></div>
+
+<!-- BOTÃO FLUTUANTE DE CONTATO -->
+<a href="#" target="_blank" class="floating-contact" id="btnContato">💬 Falar Comigo</a>
 
 <!-- MODAL: ADICIONAR VÍDEO -->
 <div class="modal-overlay" id="modalAdd">
@@ -131,6 +139,8 @@
         <input type="text" id="linkFace" placeholder="https://facebook.com/seu_perfil">
         <label style="font-size: 12px; color: #888;">Link do TikTok:</label>
         <input type="text" id="linkTiktok" placeholder="https://tiktok.com/@seu_perfil">
+        <label style="font-size: 12px; color: #888;">Link de Contato (WhatsApp, Telegram, etc):</label>
+        <input type="text" id="linkContato" placeholder="https://wa.me/5511999999999">
         <button class="form-btn" id="btnSalvarRedes" style="background: #00f2fe; color: #000; margin-top: 15px;">Salvar Redes Sociais</button>
     </div>
 </div>
@@ -195,7 +205,6 @@
             const data = await response.json();
             if (data.code === 0 && data.data && data.data.cover) {
                 item.img.src = data.data.cover;
-                // Salva a nova URL da imagem no banco de dados para todos verem
                 if (item.id) {
                     await updateDoc(doc(db, "videos", item.id), { capa: data.data.cover });
                 }
@@ -206,7 +215,6 @@
             item.img.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='426' viewBox='0 0 240 426'%3E%3Crect width='240' height='426' fill='%23161920'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23b026ff' font-weight='bold' text-anchor='middle' dy='.3em'%3EErro de Capa%3C/text%3E%3C/svg%3E";
         }
         
-        // Aguarda 1 segundo antes de corrigir a próxima
         setTimeout(() => {
             processandoFila = false;
             processarFila();
@@ -245,6 +253,7 @@
             document.getElementById('linkInsta').value = configSnap.data().instagram || "";
             document.getElementById('linkFace').value = configSnap.data().facebook || "";
             document.getElementById('linkTiktok').value = configSnap.data().tiktok || "";
+            document.getElementById('linkContato').value = configSnap.data().contato || "";
         }
     };
     window.fecharModalRedes = () => document.getElementById('modalRedes').style.display = 'none';
@@ -253,10 +262,28 @@
         const insta = document.getElementById('linkInsta').value;
         const face = document.getElementById('linkFace').value;
         const tiktok = document.getElementById('linkTiktok').value;
-        await setDoc(doc(db, "config", "redes_sociais"), { instagram: insta, facebook: face, tiktok: tiktok });
+        const contato = document.getElementById('linkContato').value;
+        
+        await setDoc(doc(db, "config", "redes_sociais"), { 
+            instagram: insta, 
+            facebook: face, 
+            tiktok: tiktok,
+            contato: contato
+        });
         alert("Redes Sociais salvas com sucesso!");
         fecharModalRedes();
+        carregarConfiguracoesBotoes(); // Atualiza o botão flutuante na hora
     });
+
+    async function carregarConfiguracoesBotoes() {
+        const configSnap = await getDoc(doc(db, "config", "redes_sociais"));
+        if (configSnap.exists() && configSnap.data().contato) {
+            const btnContato = document.getElementById('btnContato');
+            btnContato.href = configSnap.data().contato;
+            btnContato.style.display = 'flex';
+        }
+    }
+    carregarConfiguracoesBotoes();
 
     document.getElementById('btnProcessar').addEventListener('click', async () => {
         const linkBruto = document.getElementById('tiktokLink').value;
@@ -369,7 +396,6 @@
             `;
         });
 
-        // Injeta todo o HTML de uma vez só (corrige o bug do Loop Eterno)
         galeria.innerHTML = htmlGaleria;
 
         if (totalPages > 1) {
