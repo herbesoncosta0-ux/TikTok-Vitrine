@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrine do Makoto</title>
+    <title>Painel VIP - Vitrine do Makoto</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #0b0d10; color: #fff; margin: 0; padding-bottom: 50px; }
         
@@ -14,18 +14,45 @@
         .brand p { margin: 0; font-size: 12px; color: #888; text-transform: uppercase; }
         
         .nav-right { display: flex; align-items: center; gap: 10px; }
-        .social-link { background: #1a1d24; color: #fff; border: 1px solid #2a2d35; padding: 8px 15px; border-radius: 30px; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.3s; display: none; }
-        .social-link:hover { border-color: #00f2fe; color: #00f2fe; }
+        .btn-novo { background: #b026ff; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase; }
+        .btn-novo:hover { background: #c852ff; box-shadow: 0 0 15px rgba(176, 38, 255, 0.5); }
+        .btn-redes { background: #1e88e5; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; text-transform: uppercase; }
+        .btn-redes:hover { background: #1565c0; box-shadow: 0 0 15px rgba(30, 136, 229, 0.5); }
 
-        .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-box { background: #161920; padding: 25px; border-radius: 12px; border: 1px solid #2a2d35; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal-box h2 { margin-top: 0; color: #00f2fe; font-size: 20px; text-align: center; }
+        .close-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #888; font-size: 20px; cursor: pointer; }
+        .close-modal:hover { color: #b026ff; }
+        
+        input, button.form-btn { width: 100%; padding: 14px; margin: 8px 0 15px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 15px; }
+        input { background: #22252c; color: #fff; border: 1px solid #2a2d35; outline: none; }
+        input[type="datetime-local"] { color-scheme: dark; }
+        input:focus { border-color: #00f2fe; }
+        button.form-btn { background: #b026ff; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin-bottom: 0; }
+        button.form-btn:hover { background: #c852ff; }
+        
+        .preview-box { margin-top: 15px; text-align: center; display: none; background: #1a1d24; padding: 15px; border-radius: 8px; border: 1px solid #2a2d35; }
+        .preview-box img { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
+        #btnSalvar, #btnSalvarEdicao { background: #00f2fe; color: #000; margin-top: 10px; }
+        #btnSalvar:hover, #btnSalvarEdicao:hover { background: #00e0ef; }
+
+        .section-title { text-align: center; margin-top: 30px; font-size: 22px; color: #fff; letter-spacing: 1px; }
+        .grid-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
         .card-video { background-color: #161920; border: 2px solid #2a2d35; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: 0.3s; }
-        .card-video:hover { border-color: #b026ff; box-shadow: 0 0 20px rgba(176, 38, 255, 0.3); transform: translateY(-5px); }
-        .card-badge { position: absolute; top: 12px; left: 12px; background: #b026ff; color: white; font-size: 11px; font-weight: 900; padding: 5px 10px; border-radius: 6px; z-index: 2; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .card-img { width: 100%; aspect-ratio: 9/16; object-fit: cover; border-bottom: 1px solid #2a2d35; }
-        .card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
-        .card-title { font-size: 14px; font-weight: normal; color: #e0e0e0; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
-        .card-btn { background: #00f2fe; color: #000; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: block; transition: 0.2s; text-transform: uppercase; }
-        .card-btn:hover { background: #00e0ef; box-shadow: 0 0 15px rgba(0, 242, 254, 0.5); }
+        .card-content { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 14px; color: #e0e0e0; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; }
+        
+        .card-badge { position: absolute; top: 12px; left: 12px; color: white; font-size: 11px; font-weight: 900; padding: 5px 10px; border-radius: 6px; z-index: 2; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+        .admin-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+        .btn-action { flex: 1; padding: 8px; border-radius: 6px; border: none; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.2s; color: #fff; text-transform: uppercase; }
+        .btn-edit { background: #f39c12; } .btn-edit:hover { background: #e67e22; }
+        .btn-delete { background: #e74c3c; } .btn-delete:hover { background: #c0392b; }
+        .order-controls { display: flex; width: 100%; gap: 8px; margin-bottom: 8px; }
+        .btn-order { flex: 1; background: #2a2d35; color: #fff; border: 1px solid #3a3d45; border-radius: 6px; padding: 6px; cursor: pointer; transition: 0.2s; font-size: 16px; }
+        .btn-order:hover { background: #00f2fe; color: #000; border-color: #00f2fe; }
 
         /* PAGINAÇÃO */
         .pagination-controls { display: flex; justify-content: center; gap: 10px; margin: 30px auto; flex-wrap: wrap; max-width: 1200px; padding: 0 20px; }
@@ -37,15 +64,17 @@
         @media (max-width: 768px) {
             .grid-vitrine { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 10px; margin: 20px auto; }
             .card-content { padding: 10px; }
-            .card-badge { font-size: 8px; padding: 4px 6px; top: 8px; left: 8px; }
             .card-title { font-size: 11px; margin-bottom: 10px; -webkit-line-clamp: 3; }
-            .card-btn { font-size: 10px; padding: 8px; }
+            .admin-controls { gap: 4px; }
+            .btn-action { font-size: 9px; padding: 6px 4px; }
+            .order-controls { gap: 4px; margin-bottom: 6px; }
+            .btn-order { font-size: 12px; padding: 4px; }
             .navbar { padding: 15px 10px; flex-wrap: wrap; justify-content: space-between; }
             .nav-left { gap: 10px; }
             .brand h1 { font-size: 16px; }
             .brand p { font-size: 10px; }
             .nav-right { gap: 5px; margin-top: 10px; width: 100%; justify-content: flex-end; }
-            .social-link { font-size: 10px; padding: 8px 12px; }
+            .btn-novo, .btn-redes { font-size: 10px; padding: 8px 12px; }
             .page-btn { padding: 8px 12px; font-size: 12px; }
         }
     </style>
@@ -57,22 +86,74 @@
         <button class="menu-btn">☰</button>
         <div class="brand">
             <h1>VITRINE DO MAKOTO</h1>
-            <p>Os Melhores Produtos e Links</p>
+            <p>Painel VIP - Gestão</p>
         </div>
     </div>
     <div class="nav-right">
-        <a href="#" target="_blank" class="social-link" id="btnInsta">Instagram</a>
-        <a href="#" target="_blank" class="social-link" id="btnFace">Facebook</a>
-        <a href="#" target="_blank" class="social-link" id="btnTiktok">TikTok</a>
+        <button class="btn-redes" onclick="abrirModalRedes()">Redes Sociais</button>
+        <button class="btn-novo" onclick="abrirModalAdd()">+ Novo Vídeo</button>
     </div>
 </header>
 
-<div class="grid-vitrine" id="galeriaPublica"></div>
-<div class="pagination-controls" id="paginationPublic"></div>
+<h2 class="section-title">A TUA VITRINE (EDITÁVEL)</h2>
+<div class="grid-vitrine" id="galeriaAdmin"></div>
+<div class="pagination-controls" id="paginationAdmin"></div>
+
+<!-- MODAL: ADICIONAR VÍDEO -->
+<div class="modal-overlay" id="modalAdd">
+    <div class="modal-box">
+        <button class="close-modal" onclick="fecharModalAdd()">✖</button>
+        <h2>Adicionar Link</h2>
+        
+        <label style="font-size: 12px; color: #888;">Link do TikTok:</label>
+        <input type="text" id="tiktokLink" placeholder="Cole o link do TikTok aqui...">
+        
+        <label style="font-size: 12px; color: #888;">Programar Publicação (Opcional):</label>
+        <input type="datetime-local" id="dataProgramada" title="Se deixares em branco, é publicado na hora.">
+        
+        <button class="form-btn" id="btnProcessar">1. Gerar Prévia</button>
+        <div class="preview-box" id="previewBox">
+            <img id="thumbnailImg" src="" alt="Capa">
+            <p id="videoTitle" style="font-size: 12px; color: #ccc;"></p>
+            <button class="form-btn" id="btnSalvar">2. Confirmar e Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: REDES SOCIAIS -->
+<div class="modal-overlay" id="modalRedes">
+    <div class="modal-box">
+        <button class="close-modal" onclick="fecharModalRedes()">✖</button>
+        <h2>Configurar Redes Sociais</h2>
+        <label style="font-size: 12px; color: #888;">Link do Instagram:</label>
+        <input type="text" id="linkInsta" placeholder="https://instagram.com/seu_perfil">
+        <label style="font-size: 12px; color: #888;">Link do Facebook:</label>
+        <input type="text" id="linkFace" placeholder="https://facebook.com/seu_perfil">
+        <label style="font-size: 12px; color: #888;">Link do TikTok:</label>
+        <input type="text" id="linkTiktok" placeholder="https://tiktok.com/@seu_perfil">
+        <button class="form-btn" id="btnSalvarRedes" style="background: #00f2fe; color: #000; margin-top: 15px;">Salvar Redes Sociais</button>
+    </div>
+</div>
+
+<!-- MODAL: EDITAR TÍTULO/LINK/DATA -->
+<div class="modal-overlay" id="modalEdit">
+    <div class="modal-box">
+        <button class="close-modal" onclick="fecharModalEdit()">✖</button>
+        <h2>Editar Vídeo</h2>
+        <input type="hidden" id="editId">
+        <label style="font-size: 12px; color: #888;">Título do Produto:</label>
+        <input type="text" id="editTitulo">
+        <label style="font-size: 12px; color: #888;">Link de Destino:</label>
+        <input type="text" id="editLink">
+        <label style="font-size: 12px; color: #888;">Programar Publicação:</label>
+        <input type="datetime-local" id="editDataProgramada">
+        <button class="form-btn" id="btnSalvarEdicao">Guardar Alterações</button>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBNjDRgCjgdLuwc5B4mipg4Jb6O5EOaU2k",
@@ -85,33 +166,100 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    let dadosParaSalvar = {};
     let listaVideos = [];
     
     let currentPage = 1;
     const itemsPerPage = 20;
 
-    async function carregarRedesSociais() {
+    function formatarDataInput(timestamp) {
+        if(!timestamp) return "";
+        let d = new Date(timestamp);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 16);
+    }
+
+    window.abrirModalAdd = () => document.getElementById('modalAdd').style.display = 'flex';
+    window.fecharModalAdd = () => {
+        document.getElementById('modalAdd').style.display = 'none';
+        document.getElementById('tiktokLink').value = "";
+        document.getElementById('dataProgramada').value = "";
+        document.getElementById('previewBox').style.display = "none";
+    };
+
+    window.abrirModalEdit = (id, titulo, link, dataPub) => {
+        document.getElementById('editId').value = id;
+        document.getElementById('editTitulo').value = titulo;
+        document.getElementById('editLink').value = link;
+        document.getElementById('editDataProgramada').value = formatarDataInput(dataPub);
+        document.getElementById('modalEdit').style.display = 'flex';
+    };
+    window.fecharModalEdit = () => document.getElementById('modalEdit').style.display = 'none';
+
+    window.abrirModalRedes = async () => {
+        document.getElementById('modalRedes').style.display = 'flex';
         const configSnap = await getDoc(doc(db, "config", "redes_sociais"));
         if (configSnap.exists()) {
-            const dados = configSnap.data();
-            if (dados.instagram) {
-                const btnInsta = document.getElementById('btnInsta');
-                btnInsta.href = dados.instagram;
-                btnInsta.style.display = 'inline-block';
-            }
-            if (dados.facebook) {
-                const btnFace = document.getElementById('btnFace');
-                btnFace.href = dados.facebook;
-                btnFace.style.display = 'inline-block';
-            }
-            if (dados.tiktok) {
-                const btnTiktok = document.getElementById('btnTiktok');
-                btnTiktok.href = dados.tiktok;
-                btnTiktok.style.display = 'inline-block';
-            }
+            document.getElementById('linkInsta').value = configSnap.data().instagram || "";
+            document.getElementById('linkFace').value = configSnap.data().facebook || "";
+            document.getElementById('linkTiktok').value = configSnap.data().tiktok || "";
         }
-    }
-    carregarRedesSociais();
+    };
+    window.fecharModalRedes = () => document.getElementById('modalRedes').style.display = 'none';
+
+    document.getElementById('btnSalvarRedes').addEventListener('click', async () => {
+        const insta = document.getElementById('linkInsta').value;
+        const face = document.getElementById('linkFace').value;
+        const tiktok = document.getElementById('linkTiktok').value;
+        await setDoc(doc(db, "config", "redes_sociais"), { instagram: insta, facebook: face, tiktok: tiktok });
+        alert("Redes Sociais salvas com sucesso!");
+        fecharModalRedes();
+    });
+
+    document.getElementById('btnProcessar').addEventListener('click', async () => {
+        const linkBruto = document.getElementById('tiktokLink').value;
+        const btnProcessar = document.getElementById('btnProcessar');
+        if (!linkBruto) { alert("Cola um link primeiro."); return; }
+        
+        const link = linkBruto.split('?')[0];
+        btnProcessar.innerText = "A procurar...";
+        
+        try {
+            const response = await fetch(`https://www.tikwm.com/api/?url=${link}`);
+            const data = await response.json();
+            if (data.code === 0 && data.data && data.data.cover) {
+                document.getElementById('thumbnailImg').src = data.data.cover;
+                document.getElementById('videoTitle').innerText = data.data.title;
+                document.getElementById('previewBox').style.display = 'block';
+                
+                dadosParaSalvar = { 
+                    linkOriginal: link, 
+                    capa: data.data.cover, 
+                    titulo: data.data.title, 
+                    dataCriacao: new Date().getTime() 
+                };
+            } else {
+                alert("Erro: O vídeo pode ser privado.");
+            }
+        } catch (error) {
+            alert("Erro de comunicação com a API.");
+        } finally {
+            btnProcessar.innerText = "1. Gerar Prévia";
+        }
+    });
+
+    document.getElementById('btnSalvar').addEventListener('click', async () => {
+        try {
+            let agendamento = document.getElementById('dataProgramada').value;
+            dadosParaSalvar.dataPublicacao = agendamento ? new Date(agendamento).getTime() : new Date().getTime();
+
+            await addDoc(collection(db, "videos"), dadosParaSalvar);
+            fecharModalAdd();
+            carregarVideos();
+        } catch (e) {
+            alert("Erro ao salvar no banco de dados.");
+        }
+    });
 
     async function carregarVideos() {
         try {
@@ -120,22 +268,23 @@
             listaVideos = [];
             querySnapshot.forEach((doc) => {
                 const video = doc.data();
+                video.id = doc.id; 
                 listaVideos.push(video);
             });
             renderizarGrelha();
         } catch (error) {
-            document.getElementById('galeriaPublica').innerHTML = '<p style="text-align:center; color:#b026ff;">Erro ao carregar a vitrine.</p>';
+            document.getElementById('galeriaAdmin').innerHTML = '<p style="text-align:center; color:#b026ff;">Erro ao carregar a grelha.</p>';
         }
     }
 
     function renderizarGrelha() {
-        const galeria = document.getElementById('galeriaPublica');
-        const pagination = document.getElementById('paginationPublic');
+        const galeria = document.getElementById('galeriaAdmin');
+        const pagination = document.getElementById('paginationAdmin');
         galeria.innerHTML = '';
         pagination.innerHTML = '';
 
         if (listaVideos.length === 0) {
-            galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum produto publicado ainda.</p>';
+            galeria.innerHTML = '<p style="text-align:center; width:100%; color:#aaa;">Nenhum vídeo publicado ainda.</p>';
             return;
         }
 
@@ -146,14 +295,31 @@
         const endIndex = startIndex + itemsPerPage;
         const videosParaExibir = listaVideos.slice(startIndex, endIndex);
 
-        videosParaExibir.forEach((video) => {
+        const agora = new Date().getTime();
+
+        videosParaExibir.forEach((video, index) => {
+            const globalIndex = startIndex + index;
+            const safeTitulo = (video.titulo || '').replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+            
+            const dataPub = video.dataPublicacao || video.dataCriacao;
+            const isAgendado = dataPub > agora;
+            const badgeBg = isAgendado ? "#f39c12" : "#b026ff";
+            const badgeTxt = isAgendado ? "AGENDADO" : "PUBLICADO";
+
             galeria.innerHTML += `
-                <div class="card-video">
-                    <div class="card-badge">OFERTA TIKTOK</div>
-                    <img class="card-img" src="${video.capa}" alt="Capa">
+                <div class="card-video" style="${isAgendado ? 'border-color: #f39c12;' : ''}">
+                    <div class="card-badge" style="background: ${badgeBg};">${badgeTxt}</div>
+                    <img class="card-img" src="${video.capa}">
                     <div class="card-content">
-                        <div class="card-title">${video.titulo || 'Ver vídeo do produto'}</div>
-                        <a class="card-btn" href="${video.linkOriginal}" target="_blank">🛒 COMPRAR / ASSISTIR</a>
+                        <div class="card-title">${safeTitulo}</div>
+                        <div class="order-controls">
+                            <button class="btn-order" onclick="moverVideo(${globalIndex}, 'esquerda')" title="Mover para a esquerda">⬅️</button>
+                            <button class="btn-order" onclick="moverVideo(${globalIndex}, 'direita')" title="Mover para a direita">➡️</button>
+                        </div>
+                        <div class="admin-controls">
+                            <button class="btn-action btn-edit" onclick="abrirModalEdit('${video.id}', '${safeTitulo}', '${video.linkOriginal}', ${dataPub})">✏️ Editar</button>
+                            <button class="btn-action btn-delete" onclick="deletarVideo('${video.id}')">🗑️ Excluir</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -169,11 +335,47 @@
     window.mudarPagina = (page) => {
         currentPage = page;
         renderizarGrelha();
-        window.scrollTo({ top: document.getElementById('galeriaPublica').offsetTop - 20, behavior: 'smooth' });
+        window.scrollTo({ top: document.getElementById('galeriaAdmin').offsetTop - 20, behavior: 'smooth' });
+    };
+
+    window.deletarVideo = async (id) => {
+        if(confirm("Tens a certeza que queres excluir este vídeo da vitrine?")) {
+            await deleteDoc(doc(db, "videos", id));
+            carregarVideos();
+        }
+    };
+
+    document.getElementById('btnSalvarEdicao').addEventListener('click', async () => {
+        const id = document.getElementById('editId').value;
+        const novoTitulo = document.getElementById('editTitulo').value;
+        const novoLink = document.getElementById('editLink').value;
+        const novaDataAgendada = document.getElementById('editDataProgramada').value;
+        
+        const timestampPub = novaDataAgendada ? new Date(novaDataAgendada).getTime() : new Date().getTime();
+
+        await updateDoc(doc(db, "videos", id), { 
+            titulo: novoTitulo, 
+            linkOriginal: novoLink,
+            dataPublicacao: timestampPub
+        });
+        
+        fecharModalEdit();
+        carregarVideos();
+    });
+
+    window.moverVideo = async (indexAtual, direcao) => {
+        let indexAlvo = direcao === 'esquerda' ? indexAtual - 1 : indexAtual + 1;
+        if (indexAlvo >= 0 && indexAlvo < listaVideos.length) {
+            const videoAtual = listaVideos[indexAtual];
+            const videoAlvo = listaVideos[indexAlvo];
+            const tempDate = videoAtual.dataCriacao;
+            await updateDoc(doc(db, "videos", videoAtual.id), { dataCriacao: videoAlvo.dataCriacao });
+            await updateDoc(doc(db, "videos", videoAlvo.id), { dataCriacao: tempDate });
+            carregarVideos();
+        }
     };
 
     carregarVideos();
 </script>
-
 </body>
 </html>
