@@ -172,6 +172,25 @@
     let currentPage = 1;
     const itemsPerPage = 20;
 
+    // Função global para corrigir capa quebrada E atualizar o banco de dados
+    window.corrigirCapa = async (imgElement, videoId, linkOriginal) => {
+        if (imgElement.dataset.corrigido) return; // Evita loop
+        imgElement.dataset.corrigido = "true";
+        try {
+            const response = await fetch(`https://www.tikwm.com/api/?url=${linkOriginal}`);
+            const data = await response.json();
+            if (data.code === 0 && data.data && data.data.cover) {
+                imgElement.src = data.data.cover;
+                // Salva a nova URL da imagem no banco de dados
+                await updateDoc(doc(db, "videos", videoId), { capa: data.data.cover });
+            } else {
+                imgElement.src = "https://via.placeholder.com/300x533/161920/b026ff?text=Sem+Capa";
+            }
+        } catch (e) {
+            imgElement.src = "https://via.placeholder.com/300x533/161920/b026ff?text=Sem+Capa";
+        }
+    };
+
     function formatarDataInput(timestamp) {
         if(!timestamp) return "";
         let d = new Date(timestamp);
@@ -306,10 +325,11 @@
             const badgeBg = isAgendado ? "#f39c12" : "#b026ff";
             const badgeTxt = isAgendado ? "AGENDADO" : "PUBLICADO";
 
+            // Adicionado o onerror para recarregar a imagem caso o link do TikTok expire
             galeria.innerHTML += `
                 <div class="card-video" style="${isAgendado ? 'border-color: #f39c12;' : ''}">
                     <div class="card-badge" style="background: ${badgeBg};">${badgeTxt}</div>
-                    <img class="card-img" src="${video.capa}">
+                    <img class="card-img" src="${video.capa}" alt="Capa" onerror="window.corrigirCapa(this, '${video.id}', '${video.linkOriginal}')">
                     <div class="card-content">
                         <div class="card-title">${safeTitulo}</div>
                         <div class="order-controls">
